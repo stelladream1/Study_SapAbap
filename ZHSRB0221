@@ -1,0 +1,184 @@
+*&---------------------------------------------------------------------*
+*& Report ZHSRB0221
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZHSRB0221.
+*" STEP 1.
+*DATA : GV_INPUT1 TYPE P LENGTH 5 DECIMALS 2,
+*       GV_INPUT2 TYPE P LENGTH 5 DECIMALS 2,
+*       GV_RESULT TYPE P LENGTH 7 DECIMALS 2.
+*
+**GV_INPUT1 = '100'.
+**GV_INPUT2 = '100'.
+**GV_RESULT = GV_INPUT1 + GV_INPUT2.
+**WRITE : '1 :' , GV_RESULT, /.
+**
+**GV_INPUT1 = '200'.
+**GV_INPUT2 = '200'.
+**GV_RESULT = GV_INPUT1 + GV_INPUT2.
+**WRITE : '2 :' , GV_RESULT, /.
+*
+*
+*GV_INPUT1 = '100'.
+*GV_INPUT2 = '100'.
+*PERFORM ADD_CALC.
+*WRITE : '1 :' , GV_RESULT, /.
+*
+*GV_INPUT1 = '400'.
+*GV_INPUT2 = '200'.
+**PERFORM ADD_CALC.
+*PERFORM MINUS_CALC.
+*WRITE : '2 :' , GV_RESULT, /.
+*
+*GV_INPUT1 = '300'.
+*GV_INPUT2 = '300'.
+*PERFORM ADD_CALC.
+*WRITE : '3 :' , GV_RESULT, /.
+**&---------------------------------------------------------------------*
+**& Form ADD_CALC
+**&---------------------------------------------------------------------*
+**& text
+**&---------------------------------------------------------------------*
+**& -->  p1        text
+**& <--  p2        text
+**&---------------------------------------------------------------------*
+*FORM ADD_CALC .
+* GV_RESULT = GV_INPUT1 + GV_INPUT2.
+*ENDFORM.
+**&---------------------------------------------------------------------*
+**& Form MINUS_CALC
+**&---------------------------------------------------------------------*
+**& text
+**&---------------------------------------------------------------------*
+**& -->  p1        text
+**& <--  p2        text
+**&---------------------------------------------------------------------*
+*FORM MINUS_CALC .
+* GV_RESULT = GV_INPUT1 - GV_INPUT2.
+*ENDFORM.
+
+*PARAMETERS : P_INT1 TYPE I,
+*             P_INT2 TYPE I.
+*
+*TYPES : GTY_PERC TYPE P DECIMALS 2.
+*DATA : GV_INT1 TYPE I ,
+*       GV_INT2 TYPE I ,
+*       GV_RESULT TYPE GTY_PERC.
+*GV_INT1 = P_INT1.
+*GV_INT2 = P_INT2.
+*
+*PERFORM CALC_PERC USING GV_INT1
+*                        GV_INT2
+*                  CHANGING GV_RESULT.
+*
+*WRITE : GV_RESULT , /.
+**&---------------------------------------------------------------------*
+**& Form CALC_PERC
+**&---------------------------------------------------------------------*
+**& text
+**&---------------------------------------------------------------------*
+**&      --> GV_INT1
+**&      --> GV_INT2
+**&      <-- GV_RESULT
+**&---------------------------------------------------------------------*
+*FORM CALC_PERC  USING    PV_INT1 TYPE I
+*                         PV_INT2 TYPE I
+*                CHANGING PV_RESULT TYPE P.
+** P_GV_RESULT = P_GV_INT1 * P_GV_INT1.
+*
+*  DATA : LV_RESULT TYPE P LENGTH 7 DECIMALS 2.
+*
+*  LV_RESULT = PV_INT1 * 100 / PV_INT2.
+*  PV_RESULT = LV_RESULT.
+*
+*ENDFORM.
+
+
+*TYPES : BEGIN OF TY_INFO,
+*  NAME(10) TYPE C,
+*  AGE TYPE I,
+*  GENDER TYPE C,
+*  DDEPT TYPE C LENGTH 20,
+*  CDEPT TYPE C LENGTH 20,
+* END OF TY_INFO.
+*
+* DATA : GS_INFO TYPE TY_INFO.
+*
+* DATA : GV_TEXT TYPE C LENGTH 100.
+*
+* GS_INFO-NAME = '홍길동'.
+* GS_INFO-AGE = '25'.
+* GS_INFO-GENDER = 'M'.
+* GS_INFO-DDEPT = '사회체육학과'.
+* GS_INFO-CDEPT = '예체능대학'.
+*
+* PERFORM SET_TEXT USING GS_INFO
+*                  CHANGING GV_TEXT.
+*
+* WRITE : GV_TEXT,/.
+**&---------------------------------------------------------------------*
+**& Form SET_TEXT
+**&---------------------------------------------------------------------*
+**& text
+**&---------------------------------------------------------------------*
+**&      --> GS_INFO
+**&      <-- GV_TEXT
+**&---------------------------------------------------------------------*
+*FORM SET_TEXT  USING    PS_INFO TYPE TY_INFO
+*               CHANGING PV_TEXT LIKE GV_TEXT.
+*
+*  DATA : PV_AGE(2) TYPE C.
+*  PV_AGE = PS_INFO-AGE.
+*  CONCATENATE PS_INFO-NAME
+*              PV_AGE
+*              PS_INFO-GENDER
+*              PS_INFO-DDEPT
+*              PS_INFO-CDEPT
+*              INTO PV_TEXT SEPARATED BY SPACE.
+*
+*ENDFORM.
+*
+
+*TYPES : BEGIN OF TY_INFO,
+*  TEXT1(64) TYPE C,
+*  TEXT2(64) TYPE C,
+* END OF TY_INFO.
+*
+* DATA : GS_INFO TYPE TY_INFO.
+*
+* PARAMETERS : P_TEXT1 TYPE C LENGTH 64,
+*              P_TEXT2 TYPE C  LENGTH 64.
+*
+* GS_INFO-TEXT1 = P_TEXT1.
+* GS_INFO-TEXT2 = P_TEXT2.
+*
+* GS_INFO-TEXT1 = GS_iNFO-TEXT1 && GS_INFO-TEXT2.
+*
+* WRITE : GS_INFO-TEXT1,/.
+
+
+ PARAMETERS : P_INT1 TYPE I,
+              P_INT2 TYPE I.
+
+ PERFORM SET_TEXT USING P_INT1 P_INT2.
+*&---------------------------------------------------------------------*
+*& Form SET_TEXT
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      --> P_INTP1
+*&      --> P_INT2
+*&---------------------------------------------------------------------*
+FORM SET_TEXT  USING    P_P_INT1
+                        P_P_INT2.
+
+ IF P_INT1 + P_INT2 <= 100.
+   WRITE : '해당 값은 100 이하입니다.'.
+ELSEIF P_INT1 + P_INT2 > 100 AND P_INT1 + P_INT2 < 1000.
+  WRITE : '101 부터 999 사이.'.
+ELSE.
+  WRITE : '해당 값은 1000이상'.
+ENDIF.
+
+ENDFORM.
