@@ -1,51 +1,77 @@
 *&---------------------------------------------------------------------*
-*& Report ZHSRB0228
+*& Report ZHSRB0229
 *&---------------------------------------------------------------------*
 *&
 *&---------------------------------------------------------------------*
-REPORT ZHSRB0228.
+REPORT ZHSRB0229.
+PARAMETERS:
+  PA_INT1 TYPE I,
+  PA_OP   TYPE C LENGTH 1,
+  PA_INT2 TYPE I.
 
-PARAMETERS : P_INPUT1 TYPE ZINPUT,
-             P_INPUT2 TYPE ZINPUT,
-             P_CMD    TYPE C DEFAULT '+'.
+DATA GV_RESULT TYPE P LENGTH 16 DECIMALS 2.
 
-DATA : GV_RESULT TYPE ZRESULT,
-       GV_MESSAGE TYPE STRING.
-CALL FUNCTION 'ZFM_B02_CALC97'
-  EXPORTING
-    IV_NUM1                     = P_INPUT1
-    IV_NUM2                     = P_INPUT2
-    IV_CMD                      = P_CMD
- IMPORTING
-   EV_RESULT                   = GV_RESULT
- EXCEPTIONS
-   DEVIDE_ZERO                 = 1
-   INVALID_OPERATOR            = 2
-   POWER_VALUE_TOO_HIGH        = 3
-   RESULT_VALUE_TOO_HIGH       = 4
-   ANOTHERS                    = 5
-   OTHERS                      = 6.
+IF ( PA_OP = '+' OR
+     PA_OP = '-' OR
+     PA_OP = '*' OR
+     PA_OP = '/' AND PA_INT2 <> 0 OR
+     PA_OP = '%' OR
+     PA_OP = 'P' ).
 
-CLEAR : GV_MESSAGE.
-CASE SY-SUBRC.
-  WHEN 1.
-    GV_MESSAGE = 'DEVIDE_ZERO'.
-  WHEN 2.
-    GV_MESSAGE = 'INVALID_OPERATOR'.
+  CASE PA_OP.
+    WHEN '+'.
+      GV_RESULT = PA_INT1 + PA_INT2.
+    WHEN '-'.
+      GV_RESULT = PA_INT1 - PA_INT2.
+    WHEN '*'.
+      GV_RESULT = PA_INT1 * PA_INT2.
+    WHEN '/'.
+      GV_RESULT = PA_INT1 / PA_INT2.
+    WHEN 'P'.
+      TRY.
+          CALL METHOD CL_BC400_COMPUTE=>GET_POWER
+            EXPORTING
+              IV_BASE   = PA_INT1
+              IV_POWER  = PA_INT2
+            IMPORTING
+              EV_RESULT = GV_RESULT.
+        CATCH CX_BC400_POWER_TOO_HIGH .
+          WRITE 'Max value of Power is 4'.
+        CATCH CX_BC400_RESULT_TOO_HIGH .
+          WRITE 'Result value was too high'.
+      ENDTRY.
+    WHEN '%'.
+      CALL METHOD CL_BC400_MOS_COMPUTE=>GET_PERCENTAGE
+        EXPORTING
+          IV_ACT        = PA_INT1
+          IV_MAX        = PA_INT2
+        IMPORTING
+          EV_PERCENTAGE = GV_RESULT.
 
-  WHEN 3.
-    GV_MESSAGE = 'POWER_VALUE_TOO_HIGH'.
-  WHEN 4.
-    GV_MESSAGE =  'RESULT_VALUE_TOO_HIGH'.
-  WHEN 5.
-    GV_MESSAGE = 'ANOTHERS'.
-  WHEN 6.
-    GV_MESSAGE = 'PLEASE CHECK YOUR CODE'.
 
-ENDCASE.
 
-IF GV_MESSAGE IS NOT INITIAL.
-  WRITE : GV_MESSAGE COLOR 6.
+*      CALL FUNCTION 'BC400_MOS_PERCENTAGE'
+*        EXPORTING
+*          IV_ACT           = PA_INT1
+*          IV_MAX           = PA_INT2
+*        IMPORTING
+*          EV_PERCENTAGE    = GV_RESULT
+*        EXCEPTIONS
+*          DIVISION_BY_ZERO = 1
+*          OTHERS           = 2.
+*
+*      IF SY-SUBRC <> 0.
+*        WRITE 'Error in Function Module'.
+*      ENDIF.
+
+  ENDCASE.
+
+  WRITE: 'Result:', GV_RESULT.
+
+ELSEIF PA_OP = '/' AND PA_INT2 = 0.
+  WRITE: 'No division by zero!'.
+
 ELSE.
-  WRITE : GV_RESULT.
+  WRITE: 'Invalid operator!'.
+
 ENDIF.
