@@ -1,0 +1,22 @@
+*&---------------------------------------------------------------------*
+*& Report ZHSRB0239A
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZHSRB0239A.
+
+
+INCLUDE ZHSRB0239A_T01.
+INCLUDE ZHSRB0239A_S01.
+INCLUDE ZHSRB0239A_F01.
+
+
+INITIALIZATION.
+PERFORM SET_SFLIGHT_VALUE.
+
+
+START-OF-SELECTION.
+PERFORM GET_SFLIGHT_DATA.
+END-OF-SELECTION.
+
+PERFORM DISPLAY_SFLIGHT.
