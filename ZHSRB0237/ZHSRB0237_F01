@@ -1,0 +1,62 @@
+*&---------------------------------------------------------------------*
+*& Include          ZHSRB0237_F01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*& Form SET_INIT_VALUE
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM SET_INIT_VALUE .
+  S_CAID-SIGN = 'I'.
+  S_CAID-OPTION = 'EQ'.
+  S_CAID-LOW = 'AA'.
+  APPEND S_CAID.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form GET_FLIGHT_DATA
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM GET_FLIGHT_DATA .
+ SELECT
+   A~CARRID,
+   A~CONNID,
+   A~FLDATE,
+   A~PRICE,
+   B~BOOKID,
+   C~CARRNAME,
+   C~URL
+   FROM SFLIGHT AS A INNER JOIN SBOOK AS B
+    ON A~CARRID EQ B~CARRID
+   AND A~CONNID EQ B~CONNID
+   AND A~FLDATE EQ B~FLDATE
+                     LEFT OUTER JOIN SCARR AS C
+   ON A~CARRID EQ C~CARRID
+   INTO CORRESPONDING FIELDS OF TABLE @GT_SFLIGHT
+   WHERE A~CARRID IN @S_CAID
+   ORDER BY A~CARRID, A~CONNID , A~FLDATE ,B~BOOKID.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form DISPLAY
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM DISPLAY .
+ IF GT_SFLIGHT IS NOT INITIAL.
+   "SY-TFILL = LINES( GT_SFLIGHT ).랑 같은 것
+   DESCRIBE TABLE GT_SFLIGHT LINES GV_CNT.
+   MESSAGE S555(BC400) WITH GV_CNT '건 조회 됨'DISPLAY LIKE 'S'.
+   CL_DEMO_OUTPUT=>DISPLAY( GT_SFLIGHT ).
+ELSE.
+ ENDIF.
+ MESSAGE S555(BC400) WITH  '데이터 존재 안함' DISPLAY LIKE 'E'.
+ENDFORM.
