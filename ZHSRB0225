@@ -1,0 +1,100 @@
+*&---------------------------------------------------------------------*
+*& Report ZHSRB0225
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZHSRB0225.
+
+
+TYPES TV_RESULT TYPE P LENGTH 16 DECIMALS 2.
+
+PARAMETERS:
+  PA_INT1 TYPE I,
+  PA_OP   TYPE C LENGTH 1,
+  PA_INT2 TYPE I.
+
+DATA GV_RESULT TYPE TV_RESULT.
+
+IF ( PA_OP = '+' OR
+     PA_OP = '-' OR
+     PA_OP = '*' OR
+     PA_OP = '/' AND PA_INT2 <> 0 OR
+     PA_OP = '%' OR
+     PA_OP = 'P' ).
+
+  CASE PA_OP.
+    WHEN '+'.
+      GV_RESULT = PA_INT1 + PA_INT2.
+
+    WHEN '-'.
+      GV_RESULT = PA_INT1 - PA_INT2.
+
+    WHEN '*'.
+      GV_RESULT = PA_INT1 * PA_INT2.
+
+    WHEN '/'.
+      GV_RESULT = PA_INT1 / PA_INT2.
+
+    WHEN '%'.
+      PERFORM CALC_PERCENTAGE
+        USING
+          PA_INT1
+          PA_INT2
+        CHANGING
+          GV_RESULT.
+
+    WHEN 'P'.
+      CALL FUNCTION 'BC400_MOS_POWER'
+        EXPORTING
+          IV_BASE               = PA_INT1 "RHS  = EQ, NE, GT, LT , GE, LE
+          IV_POWER              = PA_INT2
+        IMPORTING
+          EV_RESULT             = GV_RESULT "LHS "MOVE, MOVE CORESPONDING, ADD
+        EXCEPTIONS
+          POWER_VALUE_TOO_HIGH  = 1
+          RESULT_VALUE_TOO_HIGH = 2
+          OTHERS                = 3.
+      CASE SY-SUBRC.
+        WHEN 0.
+*         no action needed
+        WHEN 1.
+          WRITE 'Max value of power is 4'.
+        WHEN 2.
+          WRITE 'Result value too high'.
+        WHEN 3.
+          WRITE 'Unknown error'.
+      ENDCASE.
+  ENDCASE.
+
+  WRITE: 'Result:', GV_RESULT.
+
+ELSEIF PA_OP = '/' AND PA_INT2 = 0.
+  WRITE: 'No division by zero!'.
+ELSE.
+  WRITE: 'Invalid operator!'.
+ENDIF.
+
+
+*&---------------------------------------------------------------------*
+*&      Form  calc_percentage
+*&---------------------------------------------------------------------*
+*       calculate percentage value
+*----------------------------------------------------------------------*
+*      -->PV_ACT    actual value
+*      -->PV_MAX    maximum value
+*      <--CV_RESULT  result
+*----------------------------------------------------------------------*
+FORM CALC_PERCENTAGE USING PV_ACT TYPE I
+                           PV_MAX TYPE I
+                     CHANGING CV_RESULT TYPE TV_RESULT.
+
+*Simple Error Handling
+  IF PV_MAX = 0.
+    CV_RESULT = 0.
+    WRITE 'Error in percentage calculation'.
+  ELSE.
+*Calculate result
+    CV_RESULT = PV_ACT / PV_MAX * 100.
+  ENDIF.
+
+ENDFORM. " calc_percentage
