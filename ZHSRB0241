@@ -1,0 +1,39 @@
+*&---------------------------------------------------------------------*
+*& Report ZHSRB0241
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZHSRB02.
+
+*
+*DATA : GT_ITAB LIKE TABLE OF ZSINFOT_B02,
+*       GS_ITAB LIKE LINE OF GT_ITAB.
+*
+**
+*GS_ITAB-STDNO = '111111'.
+*GS_ITAB-STDNM = 'HANSUNG'.
+*GS_ITAB-DEPARTMENT = 'HANSUNG'.
+*GS_ITAB-MAJOR = '1'.
+*GS_ITAB-CGRADE = '1'.
+*APPEND GS_ITAB TO GT_ITAB.
+*
+*GS_ITAB-STDNO = '112111'.
+*GS_ITAB-STDNM = 'HANSUNG2'.
+*GS_ITAB-DEPARTMENT = 'HANSUNG'.
+*GS_ITAB-MAJOR = '1'.
+*GS_ITAB-CGRADE = '1'.
+*APPEND GS_ITAB TO GT_ITAB.
+*
+**INSERT ZSINFOT_B02 FROM TABLE GT_ITAB ACCEPTING DUPLICATE KEYS.
+**MODIFY ZSINFOT_B02 FROM TABLE GT_ITAB.
+*DELETE ZSINFOT_B02 FROM TABLE GT_ITAB.
+*
+**
+**UPDATE ZSINFOT_B02 SET STDNM = 'KANE'
+**WHERE STDNO EQ '111111'.
+*IF SY-SUBRC EQ 0.
+*  COMMIT WORK.
+*
+*ENDIF.
+
+PARAMETERS : P_STDNO TYPE ZE_STDNO_B02.
