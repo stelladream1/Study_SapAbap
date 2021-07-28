@@ -1,0 +1,25 @@
+*&---------------------------------------------------------------------*
+*& Include          ZHSRB0237_T01
+*&---------------------------------------------------------------------*
+
+
+
+
+TABLES : SFLIGHT.
+
+TYPES : BEGIN OF TS_SFLIGHT,
+  CARRID TYPE SFLIGHT-CARRID,
+  CONNID TYPE SFLIGHT-CONNID,
+  FLDATE TYPE SFLIGHT-FLDATE,
+  PRICE TYPE SFLIGHT-PRICE,
+  BOOKID TYPE SBOOK-BOOKID,
+  CARRNAME TYPE SCARR-CARRNAME,
+  URL TYPE SCARR-URL,
+  END OF TS_SFLIGHT.
+
+  DATA : GS_SFLIGHT TYPE TS_SFLIGHT,
+         GT_SFLIGHT LIKE TABLE OF GS_SFLIGHT.
+
+  DATA : GV_MESSAGE TYPE STRING,
+         GV_TABIX TYPE SY-TABIX,
+         GV_CNT TYPE I.
