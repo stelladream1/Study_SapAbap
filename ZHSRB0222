@@ -1,0 +1,56 @@
+*&---------------------------------------------------------------------*
+*& Report ZHSRB0222
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZHSRB0222.
+
+
+
+TYPES TV_RESULT TYPE P LENGTH 16 DECIMALS 2.
+PARAMETERS : PA_INT1 TYPE I,
+             PA_OP TYPE C LENGTH 1,
+             PA_INT2 TYPE I.
+
+DATA GV_RESULT TYPE TV_RESULT.
+IF ( PA_OP = '+' OR PA_OP = '-' OR PA_OP = '*' OR
+     PA_OP = '/' AND PA_INT2 <> 0
+     OR PA_OP ='%' ).
+
+CASE PA_OP.
+  WHEN '+'.
+    GV_RESULT = PA_INT1 + PA_INT2.
+  WHEN '-'.
+    GV_RESULT = PA_INT1 - PA_INT2.
+  WHEN '*'.
+    GV_RESULT = PA_INT1 * PA_INT2.
+  WHEN '/'.
+    GV_RESULT = PA_INT1 / PA_INT2.
+  WHEN '%'.
+     PERFORM CALC_PERCENTAGE USING PA_INT1 PA_INT2 CHANGING GV_RESULT.
+ ENDCASE.
+  WRITE : 'RESULT :'(RES) , GV_RESULT.
+ ELSEIF PA_OP = '/' AND PA_INT2 = 0.
+   WRITE : 'NO DIVISION BY ZERO'.
+ ELSE.
+   WRITE : 'INVALID OPERATOR'.
+ ENDIF.
+*&---------------------------------------------------------------------*
+*& Form CALC_PERCENTAGE
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      --> PA_INT1
+*&      --> PA_INT2
+*&      <-- GV_RESULT
+*&---------------------------------------------------------------------*
+FORM CALC_PERCENTAGE  USING    PV_ACT TYPE I
+                               PV_MAX TYPE I
+                      CHANGING CV_RESULT TYPE TV_RESULT.
+IF PV_MAX = 0.
+  CV_RESULT = 0.
+  WRITE : 'ERROR'.
+ ELSE.
+   CV_RESULT = PV_MAX * 100.
+   ENDIF.
+ENDFORM.
