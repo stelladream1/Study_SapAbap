@@ -1,0 +1,28 @@
+*&---------------------------------------------------------------------*
+*& Include          ZHSRB0238_T01
+*&---------------------------------------------------------------------*
+
+
+TABLES : EKKO, EKPO,MARA.
+
+DATA : BEGIN OF GS_EKKO,
+  EBELN TYPE EKKO-EBELN,
+  EBELP TYPE EKPO-EBELP,
+  BUKRS TYPE EKKO-BUKRS,
+  BSTYP TYPE EKKO-BSTYP,
+  EKORG TYPE EKKO-EKORG,
+  EKGRP  TYPE EKKO-EKGRP,
+  WAERS  TYPE EKKO-WAERS,
+  LOEKZ  TYPE EKPO-LOEKZ,
+  MEINS  TYPE EKPO-MEINS,
+  NETWR  TYPE EKPO-NETWR,
+  MATNR TYPE MARA-MATNR,
+  MATKL TYPE MARA-MATKL,
+  MAKTX TYPE MAKT-MAKTX,
+END OF GS_EKKO.
+
+  DATA : GT_EKKO LIKE TABLE OF GS_EKKO.
+
+  DATA : GV_MESSAGE TYPE STRING,
+         GV_TABIX TYPE SY-TABIX,
+         GV_CNT TYPE I.
