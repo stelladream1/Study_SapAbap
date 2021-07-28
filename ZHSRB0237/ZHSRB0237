@@ -1,0 +1,22 @@
+*&---------------------------------------------------------------------*
+*& Report ZHSRB0237
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZHSRB0237.
+
+
+INCLUDE ZHSRB0237_T01. "VARIANTS
+INCLUDE ZHSRB0237_S01. "SELECT-OPTION, PARAMETERS
+INCLUDE ZHSRB0237_F01. "SUB-ROUTINE
+
+
+INITIALIZATION.
+PERFORM SET_INIT_VALUE.
+
+
+START-OF-SELECTION.
+PERFORM GET_FLIGHT_DATA.
+
+END-OF-SELECTION.
+PERFORM DISPLAY.
