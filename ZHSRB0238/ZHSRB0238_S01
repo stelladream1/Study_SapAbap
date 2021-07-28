@@ -1,0 +1,14 @@
+*&---------------------------------------------------------------------*
+*& Include          ZHSRB0238_S01
+*&---------------------------------------------------------------------*
+
+
+SELECTION-SCREEN BEGIN OF BLOCK B02.
+  SELECT-OPTIONS : S_EBELN FOR EKKO-EBELN,
+                   S_EBELP FOR EKPO-EBELP,
+                   S_EKORG FOR EKKO-EKORG,
+                   S_EKGRP FOR EKKO-EKGRP,
+                   S_MATNR FOR EKPO-MATNR.
+
+
+  SELECTION-SCREEN END OF BLOCK B02.
