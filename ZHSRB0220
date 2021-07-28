@@ -1,0 +1,43 @@
+*&---------------------------------------------------------------------*
+*& Report ZHSRB0221
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+
+ Report ZHSRB0221.
+
+PARAMETERS : P_INP1 TYPE P LENGTH 7 DECIMALS 2,
+             P_INP2 TYPE P LENGTH 7 DECIMALS 2,
+             P_CMD  TYPE C DEFAULT '+'.
+
+DATA : GV_RESULT TYPE P LENGTH 12 DECIMALS 2.
+
+CASE P_CMD.
+  WHEN '+'.
+    GV_RESULT = P_INP1 + P_INP2.
+  WHEN '-'.
+    GV_RESULT = P_INP1 - P_INP2.
+  WHEN '*'.
+    GV_RESULT = P_INP1 * P_INP2.
+  WHEN '/'.
+    IF P_INP2 EQ 0.
+      WRITE : '분모는 0 보다 커야 합니다.',/.
+      EXIT.
+    ENDIF.
+    GV_RESULT = P_INP1 / P_INP2.
+  WHEN 'M'.
+    GV_RESULT = P_INP1 MOD P_INP2.
+  WHEN '^'.
+    GV_RESULT = ( P_INP1 * P_INP2 ) * ( P_INP1 * P_INP2 ).
+  WHEN OTHERS.
+    WRITE : P_CMD, '커맨드 에러입니다.',/.
+    EXIT.
+ENDCASE.
+
+IF GV_RESULT < 0 .
+  WRITE : GV_RESULT COLOR 6 INTENSIFIED ON INVERSE OFF, '입니다' COLOR 6 INTENSIFIED ON INVERSE OFF,  /.
+ELSEIF GV_RESULT > 1000.
+  WRITE : GV_RESULT COLOR 5 INTENSIFIED ON INVERSE OFF, '입니다' COLOR 5 INTENSIFIED ON INVERSE OFF, /.
+ELSE.
+  WRITE : GV_RESULT,/.
+ENDIF.
