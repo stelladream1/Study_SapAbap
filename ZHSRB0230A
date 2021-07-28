@@ -1,0 +1,194 @@
+*&---------------------------------------------------------------------*
+*& Report ZHSRB0230A
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZHSRB0230A.
+PARAMETERS : P_CNT TYPE C DEFAULT 3.
+
+DATA : GV_INT1 TYPE ZINPUT,
+       GV_INT2 TYPE ZINPUT,
+       GV_RESULT TYPE ZRESULT,
+       GV_TEXT TYPE C LENGTH 32.
+
+DATA : GV_CNT TYPE C.
+
+
+DO P_CNT TIMES.
+ GV_CNT = SY-INDEX.
+ PERFORM RAMDOM CHANGING GV_INT1 GV_INT2.
+ PERFORM PROCESS CHANGING GV_INT1 GV_INT2 GV_CNT.
+ENDDO.
+
+
+
+*&---------------------------------------------------------------------*
+*& Form RAMDOM
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      --> GV_INT1
+*&      --> GV_INT2
+*&---------------------------------------------------------------------*
+FORM RAMDOM  CHANGING PV_INT1
+                      PV_INT2.
+
+SY-INDEX = 2.
+
+DO  SY-INDEX TIMES.
+
+  DATA GV_RESULT TYPE DATATYPE-INTEGER2.
+
+ CALL FUNCTION 'RANDOM_I2'
+      EXPORTING
+        RND_MIN         = 0
+        RND_MAX         = 100
+      IMPORTING
+        RND_VALUE       = GV_RESULT.
+
+  IF SY-INDEX = 1.
+    PV_INT1 = GV_RESULT.
+
+  ELSEIF SY-INDEX = 2.
+    PV_INT2 = GV_RESULT.
+   ENDIF.
+ENDDO.
+
+ENDFORM.
+
+
+*&---------------------------------------------------------------------*
+*& Form PROCESS
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      --> GV_RESULT
+*&---------------------------------------------------------------------*
+FORM PROCESS  CHANGING  PV_INT1 PV_INT2 PV_CNT.
+
+DATA : LV_FIRST TYPE C LENGTH 10,
+       LV_SEC TYPE C LENGTH 10,
+       LV_TEXT TYPE C LENGTH 32.
+
+
+
+LV_FIRST = PV_INT1.
+LV_SEC = PV_INT2.
+
+CONCATENATE : PV_CNT '번째 루틴' INTO LV_TEXT SEPARATED BY SPACE.
+WRITE : LV_TEXT COLOR 6,/.
+CLEAR LV_TEXT.
+
+CONDENSE LV_FIRST NO-GAPS.
+CONCATENATE : '첫번째 수:' LV_FIRST INTO LV_TEXT SEPARATED BY SPACE.
+WRITE : LV_TEXT,/.
+CLEAR LV_TEXT.
+
+
+CONDENSE LV_SEC NO-GAPS.
+CONCATENATE : '두번째 수:' LV_SEC INTO LV_TEXT SEPARATED BY SPACE.
+WRITE : LV_TEXT,/.
+CLEAR LV_TEXT.
+
+*-----------------------------------------덧셈------------------------------
+GV_RESULT = PV_INT1 + PV_INT2.
+
+LV_TEXT = GV_RESULT.
+CONDENSE LV_TEXT NO-GAPS.
+
+CONCATENATE : '덧셈:' LV_TEXT INTO LV_TEXT SEPARATED BY SPACE.
+WRITE : LV_TEXT,/.
+CLEAR : GV_RESULT , LV_TEXT.
+
+*-----------------------------------------뺄셈------------------------------
+GV_RESULT = PV_INT1 - PV_INT2.
+
+LV_TEXT = GV_RESULT.
+CONDENSE LV_TEXT NO-GAPS.
+
+CONCATENATE : '뺄셈:' LV_TEXT INTO LV_TEXT SEPARATED BY SPACE.
+WRITE : LV_TEXT,/.
+CLEAR : GV_RESULT , LV_TEXT.
+
+*-----------------------------------------곱셈------------------------------
+GV_RESULT = PV_INT1 * PV_INT2.
+
+LV_TEXT = GV_RESULT.
+CONDENSE LV_TEXT NO-GAPS.
+
+CONCATENATE : '곱셈:' LV_TEXT INTO LV_TEXT SEPARATED BY SPACE.
+WRITE : LV_TEXT,/.
+CLEAR : GV_RESULT , LV_TEXT.
+
+*-----------------------------------------나눗셈------------------------------
+IF PV_INT2 <> 0.
+  GV_RESULT = PV_INT1 / PV_INT2.
+  LV_TEXT = GV_RESULT.
+  CONDENSE LV_TEXT NO-GAPS.
+
+  CONCATENATE : '나눗셈:' LV_TEXT INTO LV_TEXT SEPARATED BY SPACE.
+  WRITE : LV_TEXT,/.
+  CLEAR : GV_RESULT , LV_TEXT.
+ELSE.
+  WRITE: '나눗셈: 0으로 나눌 수 없음'.
+ENDIF.
+
+*-----------------------------------------지수------------------------------
+
+DATA(PV_BASE) = CONV  INT4( PV_INT1 ).
+DATA(PV_POWER) = CONV  INT4( PV_INT2 ).
+
+CALL FUNCTION 'BC400_MOS_POWER'
+  EXPORTING
+    IV_BASE                     = PV_POWER
+   IV_POWER                    = PV_BASE
+ IMPORTING
+   EV_RESULT                   = GV_RESULT
+ EXCEPTIONS
+   POWER_VALUE_TOO_HIGH        = 1
+   RESULT_VALUE_TOO_HIGH       = 2
+   OTHERS                      = 3
+          .
+IF SY-SUBRC <> 0.
+ CASE SY-SUBRC.
+ 	WHEN 1.
+    LV_TEXT = 'POWER_VALUE_TOO_HIGH'.
+ 	WHEN 2.
+    LV_TEXT = 'RESULT_VALUE_TOO_HIGH'.
+ 	WHEN OTHERS.
+    LV_TEXT = 'CHECK YOUR CODE'.
+ ENDCASE.
+ENDIF.
+
+IF LV_TEXT IS NOT INITIAL.
+  CONCATENATE : '지수:' LV_TEXT INTO LV_TEXT SEPARATED BY SPACE.
+
+  WRITE : LV_TEXT,/.
+  CLEAR LV_TEXT.
+ELSE.
+  LV_TEXT = GV_RESULT.
+  CONDENSE LV_TEXT NO-GAPS.
+  CONCATENATE : '지수:' LV_TEXT INTO LV_TEXT SEPARATED BY SPACE.
+  WRITE : LV_TEXT,/.
+  CLEAR : GV_RESULT , LV_TEXT.
+ENDIF.
+*-----------------------------------------퍼센트------------------------------
+
+DATA(PV_ACT) = CONV  INT4( PV_INT1 ).
+DATA(PV_MAX) = CONV  INT4( PV_INT2 ).
+
+CALL METHOD CL_BC400_MOS_COMPUTE=>GET_PERCENTAGE
+  EXPORTING
+    IV_ACT        = PV_ACT
+    IV_MAX        = PV_MAX
+  IMPORTING
+    EV_PERCENTAGE = GV_RESULT.
+
+  LV_TEXT = GV_RESULT.
+  CONDENSE LV_TEXT NO-GAPS.
+
+  CONCATENATE : '퍼센트:' LV_TEXT INTO LV_TEXT SEPARATED BY SPACE.
+  WRITE : LV_TEXT,/.
+  CLEAR : GV_RESULT , LV_TEXT.
+
+ENDFORM.
