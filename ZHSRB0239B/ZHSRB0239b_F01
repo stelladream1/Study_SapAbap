@@ -1,0 +1,101 @@
+*&---------------------------------------------------------------------*
+*& Include          ZHSRB0239B_F01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*& Form SET_SFLIGHT_VALUE
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM SET_SFLIGHT_VALUE .
+  S_CAID-SIGN = 'I'.
+  S_CAID-OPTION = 'EQ'.
+  S_CAID-LOW = 'AA'.
+  APPEND S_CAID.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form GET_SFLIGHT_DATA
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM GET_SFLIGHT_DATA .
+
+  SELECT
+ SFLIGHT~CARRID,
+ SFLIGHT~CONNID,
+ SFLIGHT~FLDATE,
+ SFLIGHT~PRICE,
+ SCARR~CARRNAME,
+ SCARR~URL,
+ SBOOK~BOOKID,
+ SBOOK~CUSTOMID,
+SBOOK~SMOKER,
+SBOOK~INVOICE,
+ SCUSTOM~NAME,
+ SCUSTOM~COUNTRY,
+ SCUSTOM~CITY
+*    CASE SBOOK~SMOKER
+*      WHEN 'X' THEN '흡연자 있음'
+*     END AS MEMO
+
+ FROM SFLIGHT INNER JOIN SBOOK
+  ON   SFLIGHT~CARRID = SBOOK~CARRID  AND
+       SFLIGHT~CONNID EQ SBOOK~CONNID AND
+       SFLIGHT~FLDATE EQ SBOOK~FLDATE
+
+              LEFT OUTER JOIN SCARR
+   ON  SFLIGHT~CARRID EQ SCARR~CARRID
+
+             LEFT OUTER JOIN SCUSTOM
+   ON SBOOK~CUSTOMID = SCUSTOM~ID
+
+   INTO CORRESPONDING FIELDS OF TABLE @GT_DISP
+    WHERE SFLIGHT~CARRID IN @S_CAID
+    ORDER BY SFLIGHT~CARRID,SFLIGHT~CONNID, SFLIGHT~FLDATE,SBOOK~BOOKID.
+
+  LOOP AT GT_DISP.
+    CLEAR GV_TABIX.
+    GV_TABIX = SY-TABIX.
+
+
+    IF SY-SUBRC EQ 0.
+      IF GT_DISP-SMOKER = 'X' AND GT_DISP-INVOICE = ' '.
+        GT_DISP-MEMO = '흡연자있음'.
+      ELSEIF GT_DISP-INVOICE = 'X' AND GT_DISP-SMOKER = ' '.
+        GT_DISP-MEMO = '인보이스 완료'.
+      ELSEIF GT_DISP-INVOICE = 'X' AND GT_DISP-SMOKER = 'X'.
+        GT_DISP-MEMO = '흡연&인보이스'.
+      ENDIF.
+
+    ENDIF.
+
+    MODIFY GT_DISP INDEX GV_TABIX TRANSPORTING MEMO.
+
+  ENDLOOP.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form DISPLAY_SFLIGHT
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM DISPLAY_SFLIGHT.
+  IF GT_DISP IS NOT INITIAL.
+    "SY-TFILL = LINES( GT_SFLIGHT ).랑 같은 것
+    DESCRIBE TABLE GT_DISP LINES GV_CNT.
+    MESSAGE S555(BC400) WITH GV_CNT '건 조회 됨'DISPLAY LIKE 'S'.
+    CL_DEMO_OUTPUT=>DISPLAY( GT_DISP[] ).
+  ELSE.
+    MESSAGE S555(BC400) WITH  '데이터 존재 안함' DISPLAY LIKE 'E'.
+  ENDIF.
+
+
+ENDFORM.
