@@ -1,0 +1,9 @@
+*&---------------------------------------------------------------------*
+*& Include          ZHSRB0239B_S01
+*&---------------------------------------------------------------------*
+
+
+
+SELECTION-SCREEN BEGIN OF BLOCK B01.
+  SELECT-OPTIONS : S_CAID FOR SFLIGHT-CARRID.
+SELECTION-SCREEN END OF BLOCK B01.
