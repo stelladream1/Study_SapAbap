@@ -1,0 +1,64 @@
+*&---------------------------------------------------------------------*
+*& Report ZHSRB0223
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+*
+REPORT ZHSRB2023.
+
+"1. 선언부 작성
+PARAMETERS : P_INP1 TYPE I DEFAULT 100,
+             P_INP2 TYPE I DEFAULT 20,
+             P_CNT  TYPE I DEFAULT 5.
+
+DATA : GV_INP1 TYPE I,
+       GV_INP2 TYPE I.
+
+GV_INP1 = P_INP1.
+GV_INP2 = P_INP2.
+
+"2. 사칙연산 작성
+DO P_CNT TIMES.
+
+  PERFORM CALCULATOR USING GV_INP1 GV_INP2.
+
+  GV_INP1 = GV_INP1 + 100.
+  GV_INP2 = GV_INP2 - 1.
+
+ENDDO.
+*&---------------------------------------------------------------------*
+*& Form CALCULATOR
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      --> GV_INP1
+*&      --> GV_INP2
+*&---------------------------------------------------------------------*
+FORM CALCULATOR  USING PV_INP1 TYPE I
+                       PV_INP2 TYPE I.
+
+  DATA : LV_RESULT TYPE P LENGTH 7 DECIMALS 2.
+
+  CLEAR LV_RESULT.
+  LV_RESULT = PV_INP1 + PV_INP2.
+  WRITE : PV_INP1, '과', PV_INP2, '의 덧셈값은 ', LV_RESULT, '입니다',/.
+
+  CLEAR LV_RESULT.
+  LV_RESULT = PV_INP1 - PV_INP2.
+  WRITE : PV_INP1, '과', PV_INP2, '의 뺄셈값은 ', LV_RESULT, '입니다',/.
+
+  CLEAR LV_RESULT.
+  LV_RESULT = PV_INP1 * PV_INP2.
+  WRITE : PV_INP1, '과', PV_INP2, '의 곱셈값은 ', LV_RESULT, '입니다',/.
+
+  CLEAR LV_RESULT.
+  IF PV_INP2 <> 0.
+    LV_RESULT = PV_INP1 / PV_INP2.
+    WRITE : PV_INP1, '과', PV_INP2, '의 나눗셈값은 ', LV_RESULT, '입니다',/.
+  ELSE.
+    WRITE : PV_INP1, '과', PV_INP2, '의 나눗셈은 불가합니다.',/.
+  ENDIF.
+
+  WRITE : /.
+
+ENDFORM.
