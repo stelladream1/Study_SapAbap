@@ -1,0 +1,161 @@
+*&---------------------------------------------------------------------*
+*& Include          ZHSRB0239A_F01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+
+*&---------------------------------------------------------------------*
+*& Form SET_SFLIGHT_VALUE
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM SET_SFLIGHT_VALUE .
+
+
+   S_CAID-SIGN = 'I'.
+  S_CAID-OPTION = 'EQ'.
+  S_CAID-LOW = 'AA'.
+
+   S_COID-SIGN = 'I'.
+  S_COID-OPTION = 'EQ'.
+  S_COID-LOW = '0017'.
+
+  S_DATE-SIGN = 'I'.
+  S_DATE-OPTION = 'EQ'.
+  S_DATE-LOW = '20200130'.
+APPEND S_CAID.
+APPEND S_COID.
+APPEND S_DATE.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form GET_SFLIGHT_DATA
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM GET_SFLIGHT_DATA .
+
+  DATA : BEGIN OF LT_SCARR OCCURS 0,
+           CARRID   LIKE SCARR-CARRID,
+           CARRNAME LIKE SCARR-CARRNAME,
+         END OF LT_SCARR.
+
+  DATA : BEGIN OF LS_STRAVELAG,
+           AGENCYNUM LIKE STRAVELAG-AGENCYNUM,
+           COUNTRY   LIKE STRAVELAG-COUNTRY,
+           CITY      LIKE STRAVELAG-CITY,
+           NAME      LIKE STRAVELAG-NAME,
+         END OF LS_STRAVELAG.
+  DATA : LT_STRAVELAG LIKE LS_STRAVELAG OCCURS 0 WITH HEADER LINE.
+
+*
+*
+*
+*SELECT
+*  SFLIGHT~CARRID,
+*  SFLIGHT~CONNID,
+*  SFLIGHT~FLDATE,
+*  SFLIGHT~PRICE,
+*  SFLIGHT~CURRENCY,
+*  SCARR~CARRNAME,
+*  SBOOK~BOOKID,
+*  SBOOK~CUSTOMID,
+*  SBOOK~CUSTTYPE,
+*  SBOOK~AGENCYNUM,
+*  STRAVELAG~NAME,
+*  STRAVELAG~COUNTRY,
+*  STRAVELAG~CITY
+*
+*  FROM SFLIGHT INNER JOIN SBOOK
+*  ON SFLIGHT~CARRID EQ SBOOK~CARRID AND
+*     SFLIGHT~CONNID EQ SBOOK~CONNID AND
+*     SFLIGHT~FLDATE EQ SBOOK~FLDATE
+*              LEFT OUTER JOIN SCARR
+*   ON SFLIGHT~CARRID EQ SCARR~CARRID
+*              LEFT OUTER JOIN STRAVELAG
+*   ON SBOOK~AGENCYNUM EQ STRAVELAG~AGENCYNUM
+*
+*   INTO CORRESPONDING FIELDS OF TABLE @GT_DISP
+*     WHERE SFLIGHT~CARRID IN @S_CAID AND
+*           SFLIGHT~CONNID IN @S_COID AND
+*           SFLIGHT~FLDATE IN @S_DATE
+*
+*      ORDER BY SFLIGHT~CARRID,SFLIGHT~CONNID,SFLIGHT~FLDATE,SBOOK~BOOKID.
+
+
+"READ TABLE
+ SELECT
+    A~CARRID,
+    A~CONNID,
+    A~FLDATE,
+    A~PRICE,
+    A~CURRENCY,
+    B~BOOKID,
+    B~CUSTOMID,
+    B~CUSTTYPE,
+    B~AGENCYNUM
+    FROM SFLIGHT AS A
+                     INNER JOIN SBOOK AS B
+      ON A~CARRID EQ B~CARRID
+     AND A~CONNID EQ B~CONNID
+     AND A~FLDATE EQ B~FLDATE
+
+    INTO CORRESPONDING FIELDS OF TABLE @GT_DISP
+    WHERE A~CARRID IN @S_CAID
+      AND A~CONNID IN @S_COID
+      AND A~FLDATE IN @S_DATE
+    ORDER BY A~CARRID, A~CONNID, A~FLDATE, B~BOOKID.
+
+  SELECT DISTINCT CARRID, CARRNAME
+    FROM SCARR
+    INTO CORRESPONDING FIELDS OF TABLE @LT_SCARR
+    FOR ALL ENTRIES IN @GT_DISP
+    WHERE CARRID EQ @GT_DISP-CARRID
+    ORDER BY PRIMARY KEY.
+
+  SELECT AGENCYNUM, COUNTRY, CITY, NAME
+    FROM STRAVELAG
+    INTO CORRESPONDING FIELDS OF TABLE @LT_STRAVELAG
+    FOR ALL ENTRIES IN @GT_DISP
+    WHERE AGENCYNUM EQ @GT_DISP-AGENCYNUM
+    ORDER BY PRIMARY KEY.
+
+  LOOP AT GT_DISP INTO GS_DISP.
+    CLEAR GV_TABIX.
+    GV_TABIX = SY-TABIX.
+
+    READ TABLE LT_SCARR WITH KEY CARRID = GS_DISP-CARRID.
+    IF SY-SUBRC EQ 0.
+      GS_DISP-CARRNAME = LT_SCARR-CARRNAME.
+    ENDIF.
+
+    READ TABLE LT_STRAVELAG WITH KEY AGENCYNUM = GS_DISP-AGENCYNUM.
+    IF SY-SUBRC EQ 0.
+*      MOVE-CORRESPONDING LT_STRAVELAG TO GS_DISP.
+      GS_DISP-COUNTRY = LT_STRAVELAG-COUNTRY.
+      GS_DISP-CITY    = LT_STRAVELAG-CITY.
+      GS_DISP-NAME    = LT_STRAVELAG-NAME .
+    ENDIF.
+
+    MODIFY GT_DISP FROM GS_DISP INDEX GV_TABIX TRANSPORTING CARRNAME COUNTRY CITY NAME.
+  ENDLOOP.
+
+ENDFORM.
+
+FORM DISPLAY_SFLIGHT .
+  IF GT_DISP IS NOT INITIAL.
+    "SY-TFILL = LINES( GT_SFLIGHT ).랑 같은 것
+    DESCRIBE TABLE GT_DISP LINES GV_CNT.
+    MESSAGE S555(BC400) WITH GV_CNT '건 조회 됨'DISPLAY LIKE 'S'.
+    CL_DEMO_OUTPUT=>DISPLAY( GT_DISP ).
+  ELSE.
+     MESSAGE S555(BC400) WITH  '데이터 존재 안함' DISPLAY LIKE 'E'.
+  ENDIF.
+
+
+ENDFORM.
