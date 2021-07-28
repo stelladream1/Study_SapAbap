@@ -1,0 +1,21 @@
+*&---------------------------------------------------------------------*
+*& Report ZHSRB0238
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZHSRB0238.
+
+INCLUDE ZHSRB0238_T01.
+INCLUDE ZHSRB0238_S01.
+INCLUDE ZHSRB0238_F01.
+
+
+INITIALIZATION.
+PERFORM SET_VALUE.
+
+
+START-OF-SELECTION.
+PERFORM GET_EKKO_DATA.
+END-OF-SELECTION.
+
+PERFORM DISPLAY_EKKO.
