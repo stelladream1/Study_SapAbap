@@ -1,0 +1,74 @@
+*&---------------------------------------------------------------------*
+*& Report ZHSRB0210
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZHSRB0210.
+*
+*PARAMETERS : P_INP1 TYPE P LENGTH 5 DECIMALS 2,
+*             P_INP2 TYPE P LENGTH 5 DECIMALS 2,
+*             P_CMD TYPE C.
+*
+*DATA : GV_RESULT TYPE P LENGTH 10 DECIMALS 2.
+*
+*IF P_CMD = '+'.
+*  GV_RESULT = P_INP1 + P_INP2.
+* ELSEIF P_CMD = '-'.
+*  GV_RESULT = P_INP1 - P_INP2.
+* ELSEIF P_CMD = '*'.
+*  GV_RESULT = P_INP1 * P_INP2.
+* ELSEIF P_CMD = '/'. "AND P_INP2 <> '0'.
+*   IF P_INP2 = 0.
+*     WRITE : '분모가 0임'.
+*     EXIT.
+*     ENDIF.
+*   GV_RESULT = P_INP1 / P_INP2.
+** ELSEIF P_CMD = '/' AND P_INP2 = '0'.
+**    WRITE : '분모가 0임'.
+**    EXIT.
+* ELSE.
+*   WRITE : 'ERROR'.
+*   EXIT.
+*ENDIF.
+*  WRITE : GV_RESULT.
+**-------------------------------------------------
+ PARAMETERS : P_INP1 TYPE P LENGTH 5 DECIMALS 2,
+             P_INP2 TYPE P LENGTH 5 DECIMALS 2,
+             P_CMD TYPE C.
+
+DATA : GV_RESULT TYPE P LENGTH 10 DECIMALS 2.
+
+CASE P_CMD.
+  WHEN '+'.
+    GV_RESULT = P_INP1 + P_INP2.
+  WHEN '-'.
+    GV_RESULT = P_INP1 - P_INP2.
+  WHEN '*'.
+    GV_RESULT = P_INP1 * P_INP2.
+  WHEN '/'.
+    IF P_INP2 <> '0'.
+     GV_RESULT = P_INP1 / P_INP2.
+    ELSE.
+      WRITE : ' 분모는 0이 될 수 없음.'.
+      EXIT.
+    ENDIF.
+  WHEN OTHERS.
+    WRITE : 'ERROR'.
+ENDCASE.
+ WRITE : GV_RESULT.
+
+
+ CONSTANTS : GC_HELLO TYPE C LENGTH 5 VALUE 'HELLO'.
+ DATA : GV_HELLO TYPE C LENGTH 5 VALUE 'HI'.
+
+ CLEAR GV_HELLO.
+ GV_HELLO = 'HIII'.
+ WRITE : GC_HELLO, GV_HELLO.
+
+
+ DATA : GV_NUM1 TYPE C VALUE '1',
+        GV_NUM2 TYPE C.
+
+*GV_NUM2 = GV_NUM1.
+ MOVE GV_NUM1 TO GV_NUM2.
+ WRITE : GV_NUM2.
