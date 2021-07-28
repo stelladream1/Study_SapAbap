@@ -1,0 +1,35 @@
+*&---------------------------------------------------------------------*
+*& Report ZHSRB0224
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZHSRB0224.
+PARAMETERS : P_BASE TYPE BC400_COMPUTE_BASE,
+             P_POWER TYPE BC400_COMPUTE_POWER.
+
+
+DATA : GV_RESULT TYPE BC400_COMPUTE_RESULT.
+CALL FUNCTION 'BC400_MOS_POWER'
+  EXPORTING
+    IV_BASE                     = P_BASE
+   IV_POWER                    = P_POWER
+ IMPORTING
+   EV_RESULT                   = GV_RESULT
+ EXCEPTIONS
+   POWER_VALUE_TOO_HIGH        = 1
+   RESULT_VALUE_TOO_HIGH       = 2
+   OTHERS                      = 3.
+          .
+IF SY-SUBRC = 1.
+* Implement suitable error handling here
+  WRITE : 'ERROR POWER_VALUE_TOO_HIGH'.
+  EXIT.
+ ELSEIF SY-SUBRC = 2.
+   WRITE : 'ERROR RESULT_VALUE_TOO_HIGH'.
+   EXIT.
+  ELSEIF SY-SUBRC = 3.
+    WRITE : 'ERROR'.
+    EXIT.
+ENDIF.
+
+WRITE : GV_RESULT.
