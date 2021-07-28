@@ -1,0 +1,97 @@
+*&---------------------------------------------------------------------*
+*& Report ZHSRB0233
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZHSRB0233.
+
+
+* DATA : GT_INFO TYPE STANDARD TABLE OF ZBC400_INFO WITH HEADER LINE.
+** GS_INFO TYPE ZBC400_INFO
+*
+*
+*
+*CALL FUNCTION 'ZSFLIGHT_GET1'
+*  TABLES
+*    ET_SFLIGHT       = GT_INFO
+* EXCEPTIONS
+*   NO_DATA          = 1
+*   OTHERS           = 2
+*          .
+*IF SY-SUBRC <> 0.
+*
+* CASE SY-SUBRC.
+* WHEN 1.
+*   WRITE : 'NO DATA'.
+*
+*  WHEN 2.
+*    WRITE : 'ERROR'.
+*     ENDCASE.
+*ENDIF.
+*
+*
+* CL_DEMO_OUTPUT=>DISPLAY( GT_INFO[] ). "출력
+
+
+*---------------------------------------------------------------------
+
+TYPES : BEGIN OF ZBC400_INFO ,
+          CARRID   TYPE SFLIGHT-CARRID,
+          CONNID   TYPE SFLIGHT-CONNID,
+          FLDATE   TYPE SFLIGHT-FLDATE,
+          PRICE    TYPE SFLIGHT-PRICE,
+          CURRENCY TYPE SFLIGHT-CURRENCY,
+          MEMO     TYPE C LENGTH 40,
+          CARRNAME TYPE SCARR-CARRNAME,
+        END OF ZBC400_INFO.
+
+
+
+DATA :
+       GT_DISP TYPE STANDARD TABLE OF ZBC400_INFO WITH HEADER LINE.
+
+
+CALL FUNCTION 'ZSFLIGHT_GET1'
+  TABLES
+    ET_SFLIGHT = GT_DISP
+ EXCEPTIONS
+   NO_DATA          = 1
+   OTHERS           = 2.
+IF SY-SUBRC <> 0.
+ CASE SY-SUBRC.
+ 	WHEN 1.
+    WRITE : 'NO DATA'.
+    EXIT.
+ 	WHEN 2.
+    WRITE : 'ERROR'.
+ ENDCASE.
+ENDIF.
+
+
+LOOP AT GT_DISP.
+
+*  MOVE-CORRESPONDING GT_DISP TO GS_DISP.
+  IF GT_DISP-PRICE LT '600'.
+    GT_DISP-MEMO = '미만'.
+
+  ELSE.
+    GT_DISP-MEMO = '초과'.
+  ENDIF.
+
+ CASE GT_DISP-CARRID.
+    WHEN 'AA'.
+      GT_DISP-CARRNAME = 'American Airline'.
+    WHEN 'AZ'.
+      GT_DISP-CARRNAME = 'Asiana Airline'.
+    WHEN 'UA'.
+      GT_DISP-CARRNAME = 'United Airline'.
+    WHEN OTHERS.
+      GT_DISP-CARRNAME = 'Unknown Airline'.
+  ENDCASE.
+
+  MODIFY GT_DISP TRANSPORTING MEMO CARRNAME. "Modify GT_DISP FROM GS_DISP TRANSPORTING MEMO CARRNAME
+  CLEAR GT_DISP.
+ENDLOOP.
+
+DELETE GT_DISP[] WHERE PRICE < '450'.
+CL_DEMO_OUTPUT=>DISPLAY( GT_DISP[] ).
