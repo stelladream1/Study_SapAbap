@@ -1,0 +1,67 @@
+*&---------------------------------------------------------------------*
+*& Report ZHSRB0227
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZHSRB0227.
+
+*PARAMETERS : P_INP1 TYPE ZINPUT,
+*             P_INP2 TYPE ZINPUT,
+*             P_CMD TYPE C DEFAULT '+'.
+*
+*DATA : GV_RESULT TYPE ZRESULT.
+*
+*CALL FUNCTION 'ZFM_B02_CALC2'
+*  EXPORTING
+*    IV_NUM1                = P_INP1
+*    IV_NUM2                = P_INP2
+*   IV_CMD                 = P_CMD
+* IMPORTING
+*   EV_RESULT              = GV_RESULT
+* EXCEPTIONS
+*   DEVIDE_ZERO            = 1
+*   INVALID_OPERATOR       = 2
+*   OTHERS                 = 3.
+*
+*CASE SY-SUBRC.
+*  WHEN 0.
+*    WRITE : GV_RESULT.
+*  WHEN 1.
+*    WRITE : 'DEVIDE ZERO'.
+*  WHEN 2.
+*    WRITE : 'OPERATION IS INVALID'.
+*  WHEN 3.
+*    WRITE : 'CHECK ERROR'.
+*ENDCASE.
+
+PARAMETERS : P_INPUT1 TYPE ZINPUT,
+             P_INPUT2 TYPE ZINPUT,
+             P_CMD TYPE C DEFAULT '+'.
+DATA : GV_RESULT TYPE ZRESULT.
+CLEAR : GV_RESULT.
+
+CALL FUNCTION 'ZFM_B02_CALC2'
+  EXPORTING
+    IV_NUM1                = P_INPUT1
+    IV_NUM2                = P_INPUT2
+   IV_CMD                 = P_CMD
+ IMPORTING
+   EV_RESULT              = GV_RESULT
+ EXCEPTIONS
+   DEVIDE_ZERO            = 1
+   INVALID_OPERATOR       = 2
+   OTHERS                 = 3.
+
+IF SY-SUBRC <> 0.
+ CASE SY-SUBRC.
+ 	WHEN 1.
+    WRITE : 'DEVIDE ZERO'.
+ 	WHEN 2.
+    WRITE : 'OPERATION IS INVALID'.
+ 	WHEN 3.
+    WRITE : 'CHECK ERROR'.
+ ENDCASE.
+  EXIT.
+ENDIF.
+
+WRITE : GV_RESULT.
