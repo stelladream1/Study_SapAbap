@@ -1,0 +1,92 @@
+*&---------------------------------------------------------------------*
+*& Report ZHSRB0233A
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZHSRB0233A.
+* 1 선언부
+* ZBC400_INFO -> 구조체 참조해서 인터널 테이블 생성
+* gt_info
+*DATA : GS_INFO TYPE ZBC400_INFO,
+*       GT_INFO TYPE STANDARD TABLE OF ZBC400_INFO.
+
+DATA : GS_INFO TYPE ZBC400_INFO,
+       GT_INFO LIKE STANDARD TABLE OF GS_INFO.
+
+DATA : BEGIN OF GS_DISP.
+         INCLUDE STRUCTURE ZBC400_INFO. "테이블 전체를 구조에 포함,  iTab이나 field string으로 ABAP/4 Dictionary Table의 Structure를 사용하게 해준다.
+         DATA : MEMO(32) TYPE C,
+         CARRNAME TYPE SCARR-CARRNAME.
+DATA : END OF GS_DISP.
+DATA : GT_DISP LIKE TABLE OF GS_DISP.
+
+
+
+
+" 2 데이터 발췌 부
+*ZSFLIGHT_GET1 <= Function Module
+CALL FUNCTION 'ZSFLIGHT_GET1'
+  TABLES
+    ET_SFLIGHT = GT_INFO
+  EXCEPTIONS
+    NO_DATA    = 1
+    OTHERS     = 2.
+
+IF SY-SUBRC <> 0.
+  WRITE : 'ERROR'.
+  EXIT.
+ENDIF.
+
+* 3 출력부
+*CL_DEMO_OUTPUT=>DISPLAY( GT_INFO[] ).
+
+*LOOP AT GT_INFO INTO GS_INFO.
+*  MOVE-CORRESPONDING GS_INFO TO GS_DISP.
+*  IF GS_DISP-PRICE > '400'.
+*    GS_DISP-MEMO = 'Expensive'.
+*  ELSE.
+*    GS_DISP-MEMO = 'Cheap'.
+*  ENDIF.
+**  APPEND GS_DISP TO GT_DISP.
+*  MODIFY GT_DISP FROM GS_DISP.
+*ENDLOOP.
+
+LOOP AT GT_INFO INTO GS_INFO.
+  MOVE-CORRESPONDING GS_INFO TO GS_DISP.
+  IF GS_DISP-PRICE > '400'.
+    GS_DISP-MEMO = 'Expensive'.
+  ELSE.
+    GS_DISP-MEMO = 'Cheap'.
+  ENDIF.
+
+  IF GS_DISP-CARRID EQ 'AA'.
+    GS_DISP-CARRNAME = 'American Airline'.
+  ELSEIF GS_DISP-CARRID EQ 'AZ'.
+    GS_DISP-CARRNAME = 'Asiana Airline'.
+  ELSEIF GS_DISP-CARRID EQ 'UA'.
+    GS_DISP-CARRNAME = 'United Airline'.
+  ELSE.
+    GS_DISP-CARRNAME = 'Unkown Airline'.
+  ENDIF.
+*  MODIFY GT_DISP FROM GS_DISP TRANSPORTING MEMO CARRNAME.
+  APPEND GS_DISP TO GT_DISP.
+  CLEAR  GS_DISP.
+ENDLOOP.
+LOOP AT GT_DISP INTO GS_DISP.
+  IF GS_DISP-CARRID EQ 'AA'.
+    DELETE GT_DISP INDEX SY-TABIX.
+  ENDIF.
+ENDLOOP.
+
+
+DELETE GT_DISP[] WHERE PRICE < '450'.
+CL_DEMO_OUTPUT=>DISPLAY( GT_DISP[] ).
+
+*READ TABLE GT_DISP INTO GS_DISP WITH KEY CARRID = 'AA'
+*                                               CONNID = '0017'.
+*
+*IF SY-SUBRC EQ 0.
+*  WRITE : GS_DISP-CARRNAME , GS_DISP-CONNID, GS_DISP-FLDATE,
+*          GS_DISP-PRICE, GS_DISP-MEMO, GS_DISP-CARRNAME.
+*
+*ENDIF.
