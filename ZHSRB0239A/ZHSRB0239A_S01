@@ -1,0 +1,12 @@
+*&---------------------------------------------------------------------*
+*& Include          ZHSRB0239A_S01
+*&---------------------------------------------------------------------*
+
+
+
+SELECTION-SCREEN BEGIN OF BLOCK B01.
+  SELECT-OPTIONS : S_CAID FOR SFLIGHT-CARRID,
+                 S_COID FOR SFLIGHT-CONNID,
+                 S_DATE FOR SFLIGHT-FLDATE.
+
+  SELECTION-SCREEN END OF BLOCK B01.
