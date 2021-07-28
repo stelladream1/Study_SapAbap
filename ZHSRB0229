@@ -1,0 +1,51 @@
+*&---------------------------------------------------------------------*
+*& Report ZHSRB0228
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZHSRB0228.
+
+PARAMETERS : P_INPUT1 TYPE ZINPUT,
+             P_INPUT2 TYPE ZINPUT,
+             P_CMD    TYPE C DEFAULT '+'.
+
+DATA : GV_RESULT TYPE ZRESULT,
+       GV_MESSAGE TYPE STRING.
+CALL FUNCTION 'ZFM_B02_CALC97'
+  EXPORTING
+    IV_NUM1                     = P_INPUT1
+    IV_NUM2                     = P_INPUT2
+    IV_CMD                      = P_CMD
+ IMPORTING
+   EV_RESULT                   = GV_RESULT
+ EXCEPTIONS
+   DEVIDE_ZERO                 = 1
+   INVALID_OPERATOR            = 2
+   POWER_VALUE_TOO_HIGH        = 3
+   RESULT_VALUE_TOO_HIGH       = 4
+   ANOTHERS                    = 5
+   OTHERS                      = 6.
+
+CLEAR : GV_MESSAGE.
+CASE SY-SUBRC.
+  WHEN 1.
+    GV_MESSAGE = 'DEVIDE_ZERO'.
+  WHEN 2.
+    GV_MESSAGE = 'INVALID_OPERATOR'.
+
+  WHEN 3.
+    GV_MESSAGE = 'POWER_VALUE_TOO_HIGH'.
+  WHEN 4.
+    GV_MESSAGE =  'RESULT_VALUE_TOO_HIGH'.
+  WHEN 5.
+    GV_MESSAGE = 'ANOTHERS'.
+  WHEN 6.
+    GV_MESSAGE = 'PLEASE CHECK YOUR CODE'.
+
+ENDCASE.
+
+IF GV_MESSAGE IS NOT INITIAL.
+  WRITE : GV_MESSAGE COLOR 6.
+ELSE.
+  WRITE : GV_RESULT.
+ENDIF.
