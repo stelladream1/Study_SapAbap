@@ -1,0 +1,344 @@
+*&---------------------------------------------------------------------*
+*& Report ZHSRB0230
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZHSRB0230.
+*
+*PARAMETERS : P_CNT TYPE C DEFAULT 3.
+*
+*DATA : GV_NUM TYPE I,
+*      GV_NUMBER1 TYPE ZINPUT,
+*       GV_NUMBER2 TYPE ZINPUT,
+*       GV_RESULT TYPE ZRESULT,
+*       GV_MESSAGE TYPE STRING,
+*       GV_CNT TYPE I .
+*DATA LV_RESULT TYPE DATATYPE-INTEGER2.
+*
+*DO P_CNT TIMES.
+*  GV_CNT  = GV_CNT + 1.
+*  DATA(GV_CNT2) = CONV STRING( GV_CNT ).
+**   WRITE : GV_CNT COLOR 6 , ' 번째 루틴'  COLOR 6 ,/.
+* CONCATENATE : GV_CNT2 '번째 루틴' INTO GV_MESSAGE.
+* WRITE : GV_MESSAGE COLOR 6,/.
+*
+*    DO SY-INDEX TIMES.
+*
+*      CALL FUNCTION 'RANDOM_I2'
+*      EXPORTING
+*        RND_MIN         = 0
+*        RND_MAX         = 100
+*      IMPORTING
+*        RND_VALUE       = LV_RESULT.
+*
+*      IF SY-INDEX = 1.
+*        GV_NUMBER1 = LV_RESULT.
+*      ELSEIF SY-INDEX = 2.
+*        GV_NUMBER2 = LV_RESULT.
+*      ENDIF.
+*    ENDDO.
+*
+*    WRITE : '첫번째 수 : ', GV_NUMBER1,/.
+*    WRITE : '두번째 수 : ', GV_NUMBER2,/.
+*
+*    GV_RESULT = GV_NUMBER1 + GV_NUMBER2.
+*   DATA(GV_RESULT2) = CONV STRING( GV_RESULT ).
+*
+*
+*WRITE : '덧셈:' , GV_RESULT2,/.
+*CLEAR : GV_RESULT, GV_RESULT2.
+*    GV_RESULT = GV_NUMBER1 - GV_NUMBER2.
+*    GV_RESULT2 = CONV STRING( GV_RESULT ).
+*    WRITE : '뺄셈:' , GV_RESULT2,/.
+*    CLEAR : GV_RESULT, GV_RESULT2.
+*
+*    GV_RESULT = GV_NUMBER1 * GV_NUMBER2.
+*    GV_RESULT2 = CONV STRING( GV_RESULT ).
+*    WRITE : '곱셈:' , GV_RESULT2,/.
+*CLEAR : GV_RESULT, GV_RESULT2.
+*TRY.
+*
+*    GV_RESULT = GV_NUMBER1 / GV_NUMBER2.
+*    GV_RESULT2 = CONV STRING( GV_RESULT ).
+*      WRITE : '나눗셈:' , GV_RESULT2,/.
+*CLEAR : GV_RESULT, GV_RESULT2.
+*CATCH CX_SY_ZERODIVIDE.
+*  WRITE : '나눗셈: 0으로 나눌 수 없음',/.
+*ENDTRY.
+*
+*
+*DATA(GV_BASE) = CONV INT4( GV_NUMBER1 ).
+*DATA(GV_POWER) = CONV INT4( GV_NUMBER2 ).
+*
+*CALL FUNCTION 'BC400_MOS_POWER'
+*  EXPORTING
+*    IV_BASE                     = GV_BASE
+*   IV_POWER                    = GV_POWER
+* IMPORTING
+*   EV_RESULT                   = GV_RESULT
+* EXCEPTIONS
+*   POWER_VALUE_TOO_HIGH        = 1
+*   RESULT_VALUE_TOO_HIGH       = 2.
+*
+*IF SY-SUBRC <> 0.
+*CASE SY-SUBRC.
+*
+*  WHEN 1.
+*    GV_MESSAGE = '지수 : POWER_VALUE_TOO_HIGH'.
+*  WHEN 2.
+*     GV_MESSAGE = '지수 : RESULT_VALUE_TOO_HIGH'.
+*ENDCASE.
+*
+*IF GV_MESSAGE IS NOT INITIAL.
+*  WRITE : GV_MESSAGE,/ .
+*ELSE.
+*  GV_RESULT2 = CONV STRING( GV_RESULT ).
+*  GV_MESSAGE = '지수:' + GV_RESULT2.
+*  WRITE : GV_MESSAGE.
+*ENDIF.
+*ENDIF.
+*CLEAR : GV_RESULT, GV_RESULT2.
+*
+*    DATA(GV_ACT) = CONV INT4( GV_NUMBER1 ).
+*    DATA(GV_MAX) = CONV INT4( GV_NUMBER2 ).
+*    CALL METHOD CL_BC400_MOS_COMPUTE=>GET_PERCENTAGE
+*      EXPORTING
+*        IV_ACT        = GV_ACT
+*        IV_MAX        = GV_MAX
+*      IMPORTING
+*        EV_PERCENTAGE = GV_RESULT.
+*    GV_RESULT2 = CONV STRING( GV_RESULT ).
+*     WRITE : '퍼센트: ' , GV_RESULT2, '%',/.
+*    CLEAR : GV_RESULT, GV_RESULT2.
+*
+*ENDDO.
+*
+*
+
+
+
+
+PARAMETERS : P_CNT TYPE C DEFAULT '3'.
+
+DATA : GV_INPUT1 TYPE ZINPUT,
+       GV_INPUT2 TYPE ZINPUT,
+       GV_RESULT TYPE ZRESULT,
+       GV_INDEX  TYPE C.
+
+DO P_CNT TIMES.
+  GV_INDEX = SY-INDEX.
+  CLEAR : GV_INPUT1, GV_INPUT2, GV_RESULT.
+  PERFORM RANDOM CHANGING GV_INPUT1 GV_INPUT2.
+  PERFORM PROCESSING USING GV_INPUT1 GV_INPUT2 GV_INDEX.
+ENDDO.
+*&---------------------------------------------------------------------*
+*& Form RANDOM
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      <-- GV_INPUT1
+*&      <-- GV_INPUT2
+*&---------------------------------------------------------------------*
+FORM RANDOM  CHANGING PV_INPUT1
+                      PV_INPUT2.
+
+  DATA LV_RESULT TYPE DATATYPE-INTEGER2.
+
+  CLEAR LV_RESULT.
+  CALL FUNCTION 'RANDOM_I2'
+    EXPORTING
+      RND_MIN   = 0
+      RND_MAX   = 100
+    IMPORTING
+      RND_VALUE = LV_RESULT.
+
+  PV_INPUT1 = LV_RESULT.
+
+  CLEAR LV_RESULT.
+  CALL FUNCTION 'RANDOM_I2'
+    EXPORTING
+      RND_MIN   = 0
+      RND_MAX   = 100
+    IMPORTING
+      RND_VALUE = LV_RESULT.
+
+  PV_INPUT2 = LV_RESULT.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form PROCESSING
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      --> GV_INPUT1
+*&      --> GV_INPUT2
+*&---------------------------------------------------------------------*
+FORM PROCESSING  USING PV_INPUT1
+                 PV_INPUT2
+                 PV_INDEX.
+
+  DATA : LV_RESULT TYPE P LENGTH 16 DECIMALS 2,
+         LV_TEXT   TYPE C LENGTH 32,
+         LV_FIRST  TYPE C LENGTH 24,
+         LV_SECOND TYPE C LENGTH 24.
+
+  LV_FIRST = PV_INPUT1.
+  CONDENSE LV_FIRST NO-GAPS.
+
+  LV_SECOND = PV_INPUT2.
+  CONDENSE LV_SECOND NO-GAPS.
+
+  CONCATENATE : PV_INDEX '번째 루틴'     INTO LV_TEXT   SEPARATED BY SPACE.
+  CONCATENATE : '첫번째 수 : ' LV_FIRST  INTO LV_FIRST  SEPARATED BY SPACE.
+  CONCATENATE : '두번째 수 : ' LV_SECOND INTO LV_SECOND SEPARATED BY SPACE.
+
+  WRITE : LV_TEXT COLOR 5,/,
+          LV_FIRST,/,
+          LV_SECOND,/.
+
+  CLEAR : LV_RESULT, LV_TEXT.
+  LV_RESULT = PV_INPUT1 + PV_INPUT2.
+  LV_TEXT   = LV_RESULT.
+  CONDENSE LV_TEXT NO-GAPS.
+  CONCATENATE : '덧셈   : ' LV_TEXT INTO LV_TEXT SEPARATED BY SPACE.
+  WRITE : LV_TEXT,/.
+
+  CLEAR : LV_RESULT, LV_TEXT.
+  LV_RESULT = PV_INPUT1 - PV_INPUT2.
+  LV_TEXT   = LV_RESULT.
+  CONDENSE LV_TEXT NO-GAPS.
+  CONCATENATE : '뺄셈   : ' LV_TEXT INTO LV_TEXT SEPARATED BY SPACE.
+  WRITE : LV_TEXT,/.
+
+  CLEAR : LV_RESULT, LV_TEXT.
+  LV_RESULT = PV_INPUT1 * PV_INPUT2.
+  LV_TEXT   = LV_RESULT.
+  CONDENSE LV_TEXT NO-GAPS.
+  CONCATENATE : '곱셈   : ' LV_TEXT INTO LV_TEXT SEPARATED BY SPACE.
+  WRITE : LV_TEXT,/.
+
+  IF PV_INPUT1 EQ 0 OR PV_INPUT2 EQ 0.
+    WRITE : '나눗셈 불가'COLOR 6,/.
+  ELSE.
+    CLEAR  LV_RESULT.
+    LV_RESULT = PV_INPUT1 / PV_INPUT2.
+    LV_TEXT   = LV_RESULT.
+    CONDENSE LV_TEXT NO-GAPS.
+    CONCATENATE : '나눗셈 : ' LV_TEXT INTO LV_TEXT SEPARATED BY SPACE.
+    WRITE : LV_TEXT,/.
+  ENDIF.
+
+  CLEAR : LV_RESULT, LV_TEXT.
+  PERFORM LOCAL_POWER USING PV_INPUT1 PV_INPUT2
+                      CHANGING LV_RESULT LV_TEXT.
+
+  IF LV_TEXT IS NOT INITIAL.
+    CONCATENATE : '지수   : ' LV_TEXT INTO LV_TEXT SEPARATED BY SPACE.
+    WRITE : LV_TEXT,/.
+  ELSE.
+    LV_TEXT = LV_RESULT.
+    CONDENSE LV_TEXT NO-GAPS.
+    CONCATENATE : '지수  : ' LV_TEXT INTO LV_TEXT SEPARATED BY SPACE.
+    WRITE : LV_TEXT,/.
+  ENDIF.
+
+  CLEAR : LV_RESULT, LV_TEXT.
+  PERFORM LOCAL_PERCENTAGE USING PV_INPUT1 PV_INPUT2
+                           CHANGING LV_RESULT LV_TEXT.
+
+  IF LV_TEXT IS NOT INITIAL.
+    CONCATENATE : '퍼센트  : ' LV_TEXT INTO LV_TEXT SEPARATED BY SPACE.
+    WRITE : LV_TEXT,/.
+  ELSE.
+    LV_TEXT = LV_RESULT.
+    CONDENSE LV_TEXT NO-GAPS.
+    CONCATENATE : '퍼센트 : ' LV_TEXT '%' INTO LV_TEXT SEPARATED BY SPACE.
+    WRITE : LV_TEXT,/.
+  ENDIF.
+  WRITE : /.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form LOCAL_POWER
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      --> PV_INPUT1
+*&      --> PV_INPUT2
+*&      <-- LV_RESULT
+*&---------------------------------------------------------------------*
+FORM LOCAL_POWER  USING    PV_INPUT1
+                           PV_INPUT2
+                  CHANGING PV_RESULT
+                           PV_TEXT.
+
+  DATA(LV_BASE)  = CONV INT4( PV_INPUT1 ).
+  DATA(LV_POWER) = CONV INT4( PV_INPUT2 ).
+
+  DATA : LV_RESULT TYPE BC400_COMPUTE_RESULT.
+  CALL FUNCTION 'BC400_MOS_POWER'
+    EXPORTING
+      IV_BASE               = LV_BASE
+      IV_POWER              = LV_POWER
+    IMPORTING
+      EV_RESULT             = LV_RESULT
+    EXCEPTIONS
+      POWER_VALUE_TOO_HIGH  = 1
+      RESULT_VALUE_TOO_HIGH = 2
+      OTHERS                = 3.
+
+  IF SY-SUBRC <> 0.
+    CASE SY-SUBRC.
+      WHEN 1.
+        PV_TEXT = 'POWER_VALUE_TOO_HIGH'.
+      WHEN 2.
+        PV_TEXT = 'RESULT_VALUE_TOO_HIGH'.
+      WHEN 3.
+        PV_TEXT = 'Check Power Number'.
+    ENDCASE.
+  ELSE.
+    PV_RESULT = LV_RESULT.
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form LOCAL_PERCENTAGE
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      --> PV_INPUT1
+*&      --> PV_INPUT2
+*&      <-- LV_RESULT
+*&      <-- LV_TEXT
+*&---------------------------------------------------------------------*
+FORM LOCAL_PERCENTAGE  USING    PV_INPUT1
+                                PV_INPUT2
+                       CHANGING PV_RESULT
+                                PV_TEXT.
+
+  DATA(LV_ACT)  = CONV INT4( PV_INPUT1 ).
+  DATA(LV_MAX)  = CONV INT4( PV_INPUT2 ).
+
+  DATA : LV_PERCENTAGE TYPE BC400_PERC.
+
+CALL FUNCTION 'BC400_MOS_PERCENTAGE'
+  EXPORTING
+    IV_ACT                 = LV_ACT
+    IV_MAX                 = LV_MAX
+ IMPORTING
+   EV_PERCENTAGE           = LV_PERCENTAGE
+ EXCEPTIONS
+   DIVISION_BY_ZERO       = 1
+   OTHERS                 = 2.
+
+  IF SY-SUBRC <> 0.
+    CASE SY-SUBRC.
+      WHEN 1.
+        PV_TEXT = 'DIVISION_BY_ZERO'.
+      WHEN 2.
+        PV_TEXT = 'Check Power Number'.
+    ENDCASE.
+  ELSE.
+    PV_RESULT = LV_PERCENTAGE.
+  ENDIF.
+
+ENDFORM.
