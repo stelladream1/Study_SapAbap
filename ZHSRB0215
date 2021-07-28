@@ -1,0 +1,35 @@
+*&---------------------------------------------------------------------*
+*& Report ZHSRB0215
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZHSRB0215.
+
+PARAMETERS : P_WEIGHT TYPE P LENGTH 5 DECIMALS 2,
+             P_HEIGHT TYPE P LENGTH 3 DECIMALS 2,
+             P_NAME TYPE C LENGTH 10.
+DATA : GV_BMI TYPE P LENGTH 3 DECIMALS 1,
+      GV_RESULT(20) TYPE C,
+      GV_DISPLAY(40) TYPE C.
+
+GV_BMI = ( P_WEIGHT / ( ( P_HEIGHT * '0.01' ) * ( P_HEIGHT * '0.01' ) ) ).
+*GV_BMI = ( P_WEIGHT / ( P_HEIGHT *  P_HEIGHT ) ).
+IF GV_BMI < '18'.
+  GV_RESULT =  '저체중 입니다'.
+
+ELSEIF GV_BMI >= '18.5' AND GV_BMI < '23'.
+  GV_RESULT =  '표준체중 입니다'.
+
+ELSEIF GV_BMI >= '23' AND GV_BMI < '25'.
+  GV_RESULT =  '과체중 입니다'.
+
+ELSEIF GV_BMI >= '25'.
+  GV_RESULT =  '비만 입니다'.
+
+ENDIF.
+
+*CONCATENATE P_NAME '은' GV_RESULT INTO GV_DISPLAY SEPARATED BY SPACE.
+*WRITE : GV_DISPLAY.
+
+CONCATENATE P_NAME '은' GV_RESULT INTO GV_RESULT SEPARATED BY SPACE.
+WRITE : GV_RESULT.
