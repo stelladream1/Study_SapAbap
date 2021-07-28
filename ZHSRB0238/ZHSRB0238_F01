@@ -1,0 +1,88 @@
+*&---------------------------------------------------------------------*
+*& Include          ZHSRB0238_F01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*& Form GET_EKKO_DATA
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM GET_EKKO_DATA .
+
+ S_EBELN-SIGN = 'I'.
+  S_EBELN-OPTION = 'BT'.
+  S_EBELN-LOW = '4151500101'.
+  S_EBELN-HIGH = '415191530'.
+  APPEND S_EBELN.
+ENDFORM.
+
+*&---------------------------------------------------------------------*
+*& Form SET_VALUE
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM SET_VALUE .
+
+  SELECT
+     EKKO~EBELN,
+     EKPO~EBELP,
+     EKKO~BUKRS,
+     EKKO~BSTYP,
+     EKKO~EKORG,
+     EKKO~EKGRP,
+     EKKO~WAERS,
+     EKPO~LOEKZ,
+     EKPO~MEINS,
+     EKPO~NETWR,
+     MARA~MATNR,
+     MARA~MATKL,
+     MAKT~MAKTX
+
+     FROM EKKO
+                        INNER JOIN EKPO
+      ON EKKO~EBELN EQ EKPO~EBELN
+      AND EKKO~LOEKZ EQ EKPO~LOEKZ
+      AND EKKO~BUKRS EQ EKPO~BUKRS
+      AND EKKO~BSTYP EQ EKPO~BSTYP
+
+                        INNER JOIN MARA
+       ON MARA~MATNR EQ EKPO~MATNR
+       AND MARA~MATKL EQ EKPO~MATKL
+
+                       LEFT OUTER JOIN MAKT
+     ON MARA~MATNR EQ MAKT~MATNR
+
+     INTO CORRESPONDING FIELDS OF TABLE @GT_EKKO
+     WHERE EKKO~EBELN IN @S_EBELN AND
+           MAKT~SPRAS = 'E'
+     ORDER BY EKPO~EBELN, EKPO~MATNR, EKPO~EBELP.
+
+
+
+ENDFORM.
+
+
+
+*&---------------------------------------------------------------------*
+*& Form DISPLAY_EKKO
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM DISPLAY_EKKO .
+  IF GT_EKKO IS NOT INITIAL.
+    "SY-TFILL = LINES( GT_SFLIGHT ).랑 같은 것
+    DESCRIBE TABLE GT_EKKO LINES GV_CNT.
+    MESSAGE S555(BC400) WITH GV_CNT '건 조회 됨'DISPLAY LIKE 'S'.
+    CL_DEMO_OUTPUT=>DISPLAY( GT_EKKO ).
+  ELSE.
+  ENDIF.
+  MESSAGE S555(BC400) WITH  '데이터 존재 안함' DISPLAY LIKE 'E'.
+ENDFORM.
