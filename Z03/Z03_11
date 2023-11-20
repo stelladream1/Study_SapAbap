@@ -1,0 +1,18 @@
+*&---------------------------------------------------------------------*
+*& Report Z03_11
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT Z03_11.
+DATA: gv_carrid TYPE sflight-carrid,
+      gv_connid TYPE sflight-connid,
+      gv_paymentsum TYPE i.
+
+SELECT carrid connid AVG( paymentsum ) as paymentsum
+  INTO (gv_carrid, gv_connid, gv_paymentsum)
+  FROM sflight
+  GROUP BY carrid connid
+  HAVING AVG( paymentsum ) > 100000
+  ORDER BY paymentsum.
+  WRITE: / gv_carrid, gv_connid, gv_paymentsum.
+ENDSELECT.
